@@ -9,13 +9,13 @@ import "wav"
 import "iio"
 
 main :: proc() {
-	level :: uint(10)
-	bin_size :: 1 << level
+	level := uint(10)
+	bin_size := uint(1 << level)
 	sample_rate :: 60_000_000
 	focus_freq := 100_000_000
 	history_size :: 800
 
-	info := iio.prep_and_get_device(iio.STANDARD_IP, focus_freq, sample_rate, bin_size)
+	info := iio.prep_and_get_device(iio.STANDARD_IP, focus_freq, sample_rate, int(bin_size))
 	if !info.success do return
 //	defer iio.undo_device(&info)
 
@@ -43,9 +43,11 @@ main :: proc() {
 		delete(freqs_buffer)
 	}
 
-	was_pressed := false
+	arrow_was_pressed := false
+	space_was_pressed := false
+	paused := false
 	for !fenster.loop(fen) {
-		for y := fen.height - 1;  y > 0 ; y -= 1 {
+		if !paused do for y := fen.height - 1;  y > 0 ; y -= 1 {
 			this_line := scr_buf[fen.width*y : fen.width*(y+1)]
 			next_line := scr_buf[fen.width*(y-1) : fen.width*y]
 			copy(this_line, next_line)
@@ -61,22 +63,51 @@ main :: proc() {
 			}
 		}
 
-		pressed := false
+		/* coloured subdivisions */
+		{
+			for k: uint = bin_size >> 2; k < bin_size; k += (bin_size >> 2){
+				x := int(k)
+				y := history_size - 20
+				fen.buf[x + int(fen.width)*y] = fenster.RED
+			}
+			for k: uint = bin_size >> 3; k < bin_size; k += (bin_size >> 2){
+				x := int(k)
+				y := history_size - 10
+				fen.buf[x + int(fen.width)*y] = fenster.RED
+			}
+			for k: uint = bin_size >> 4; k < bin_size; k += (bin_size >> 3){
+				x := int(k)
+				y := history_size - 5
+				fen.buf[x + int(fen.width)*y] = fenster.BLUE
+			}
+			for k: uint = bin_size >> 5; k < bin_size; k += (bin_size >> 4){
+				x := int(k)
+				y := history_size - 5
+				fen.buf[x + int(fen.width)*y] = fenster.GREEN
+			}
+		}
+
+		arrow_pressed := false
+		space_pressed := false
 		freq_jump := 0
 		if fen.keys[ARROW_KEY.UP] {
-			pressed = true
+			arrow_pressed = true
 			freq_jump = 10_000_000
 		}
 		if fen.keys[ARROW_KEY.DOWN] {
-			pressed = true
+			arrow_pressed = true
 			freq_jump = -10_000_000
 		}
+		if fen.keys[SPACE_KEY] {
+			space_pressed = true
+		}
+		if space_pressed && !space_was_pressed do paused = !paused
 
-		if pressed && !was_pressed {
+		if arrow_pressed && !arrow_was_pressed {
 			focus_freq += freq_jump
 			fmt.printf("new center frequency: %d MHz...", focus_freq/1_000_000)
 //			iio.undo_device(&info) /* this crashes, so it's commented out for now, even though it leaks memory */
-			info := iio.prep_and_get_device(iio.STANDARD_IP, focus_freq, sample_rate, bin_size)
+			info := iio.prep_and_get_device(iio.STANDARD_IP, focus_freq, sample_rate, int(bin_size))
 			if !info.success {
 				fmt.printf(" failed :(\n")
 				return
@@ -84,7 +115,8 @@ main :: proc() {
 			fmt.printf(" success!\n")
 		}
 
-		was_pressed = pressed
+		arrow_was_pressed = arrow_pressed
+		space_was_pressed = space_pressed
 
 		if fen.keys[ESC_KEY] || fen.keys['Q'] do break
 	}

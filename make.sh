@@ -1,3 +1,5 @@
+set -e
+
 (cd iio; bash make_lib.sh)
 (cd fenster; bash make_lib.sh)
 
