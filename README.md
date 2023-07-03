@@ -1,6 +1,6 @@
 # waterfall
 A waterfall spectrum analyzer for the ADALM-PLUTO, written in Odin, using fenster and libiio. Only on X11 (for now?).
-This is a project that was made for the University of Twente First year's Wireless transmission project of 2023.
+This is a project that was made for the University of Twente First year's Electrical Engineering Wireless transmission project of 2023.
 
 ## Dependencies
 X11 (so basically, Linux), [Odin](https://github.com/odin-lang/Odin), [libiio](https://github.com/analogdevicesinc/libiio), bash
