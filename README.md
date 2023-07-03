@@ -2,7 +2,7 @@
 A waterfall spectrum analyzer for the ADALM-PLUTO SDR, written in Odin, using fenster and libiio. Only on X11 (for now?).
 This is a project that was made for the University of Twente First year's Electrical Engineering Wireless transmission project of 2023.
 
-![Mobile data LTE bands around 800MHz](/LTE_bands "A picture of the LTE bands in the program")\
+![Mobile data LTE bands around 800MHz](/LTE_bands.png "A picture of the LTE bands in the program")\
 *Mobile data LTE bands around 800MHz*
 
 ## Dependencies
