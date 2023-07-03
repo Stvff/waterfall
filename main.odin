@@ -3,24 +3,33 @@ package transmission_project
 import "core:os"
 import "core:fmt"
 import "core:time"
+import "core:strconv"
 
 import "fenster"
 import "wav"
 import "iio"
 
 main :: proc() {
-	level := uint(10)
+	waterfall()
+}
+
+waterfall :: proc() {
+	fmt.printf("waterfall\n")
+
+	level := uint(9)
+	if len(os.args) > 1 do level = uint(clamp(strconv.atoi(os.args[1]), 3, 12))
 	bin_size := uint(1 << level)
-	sample_rate :: 60_000_000
+	sample_rate := 60_000_000
 	focus_freq := 100_000_000
-	history_size :: 800
+	history_size := 800
+	if len(os.args) > 2 do history_size = clamp(strconv.atoi(os.args[2]), 20, 2000)
 
 	info := iio.prep_and_get_device(iio.STANDARD_IP, focus_freq, sample_rate, int(bin_size))
 	if !info.success do return
 //	defer iio.undo_device(&info)
 
 	using fenster
-	scr_buf := make([]rgba, bin_size*history_size)
+	scr_buf := make([]rgba, bin_size*uint(history_size))
 	f_actual := Fenster{
 		title = "waterfall",
 		width = i32(bin_size),
@@ -34,11 +43,9 @@ main :: proc() {
 		delete(scr_buf)
 	}
 
-	signal_buffer := wav.Audio{sample_rate/10_000, make([]f32, bin_size)}
 	freqi_buffer := make([]complex64, bin_size)
 	freqs_buffer := make([]f32, bin_size)
 	defer {
-		delete(signal_buffer.audio)
 		delete(freqi_buffer)
 		delete(freqs_buffer)
 	}
@@ -53,7 +60,6 @@ main :: proc() {
 			copy(this_line, next_line)
 		}
 		data := iio.refill_buffer(&info)
-//		for q, i in data do signal_buffer.audio[i] = math.atan2(f32(q[0])/wav.MAX_U15, f32(q[1])/wav.MAX_U15)
 		fted := fft(data, level, freqi_buffer, freqs_buffer)
 		{
 			maxf: f32
@@ -64,55 +70,71 @@ main :: proc() {
 		}
 
 		/* coloured subdivisions */
-		{
-			for k: uint = bin_size >> 2; k < bin_size; k += (bin_size >> 2){
-				x := int(k)
+		{ for x: uint = bin_size >> 2; x < bin_size; x += (bin_size >> 2){
 				y := history_size - 20
-				fen.buf[x + int(fen.width)*y] = fenster.RED
-			}
-			for k: uint = bin_size >> 3; k < bin_size; k += (bin_size >> 2){
-				x := int(k)
+				fen.buf[int(x) + int(fen.width)*y] = RED }
+			for x: uint = bin_size >> 3; x < bin_size; x += (bin_size >> 2){
 				y := history_size - 10
-				fen.buf[x + int(fen.width)*y] = fenster.RED
-			}
-			for k: uint = bin_size >> 4; k < bin_size; k += (bin_size >> 3){
-				x := int(k)
+				fen.buf[int(x) + int(fen.width)*y] = RED }
+			for x: uint = bin_size >> 4; x < bin_size; x += (bin_size >> 3){
 				y := history_size - 5
-				fen.buf[x + int(fen.width)*y] = fenster.BLUE
-			}
-			for k: uint = bin_size >> 5; k < bin_size; k += (bin_size >> 4){
-				x := int(k)
+				fen.buf[int(x) + int(fen.width)*y] = BLUE }
+			for x: uint = bin_size >> 5; x < bin_size; x += (bin_size >> 4){
 				y := history_size - 5
-				fen.buf[x + int(fen.width)*y] = fenster.GREEN
-			}
+				fen.buf[int(x) + int(fen.width)*y] = GREEN }
 		}
 
 		arrow_pressed := false
 		space_pressed := false
 		freq_jump := 0
-		if fen.keys[ARROW_KEY.UP] {
-			arrow_pressed = true
-			freq_jump = 10_000_000
+		rate_jump := 0
+
+		if fen.keys[ARROW_KEY.UP] { arrow_pressed = true
+			if fen.mod == i32(MOD_KEY.SHIFT) do freq_jump = 100_000_000
+			else do freq_jump = 10_000_000
 		}
-		if fen.keys[ARROW_KEY.DOWN] {
-			arrow_pressed = true
-			freq_jump = -10_000_000
+		if fen.keys[ARROW_KEY.DOWN] { arrow_pressed = true
+			if fen.mod == i32(MOD_KEY.SHIFT) do freq_jump = -100_000_000
+			else do freq_jump = -10_000_000
 		}
+
+		if fen.keys[ARROW_KEY.LEFT] { arrow_pressed = true
+			rate_jump = 10_000_000
+		}
+		if fen.keys[ARROW_KEY.RIGHT] { arrow_pressed = true
+			rate_jump = -10_000_000
+		}
+
 		if fen.keys[SPACE_KEY] {
 			space_pressed = true
 		}
 		if space_pressed && !space_was_pressed do paused = !paused
 
 		if arrow_pressed && !arrow_was_pressed {
-			focus_freq += freq_jump
-			fmt.printf("new center frequency: %d MHz...", focus_freq/1_000_000)
-//			iio.undo_device(&info) /* this crashes, so it's commented out for now, even though it leaks memory */
-			info := iio.prep_and_get_device(iio.STANDARD_IP, focus_freq, sample_rate, int(bin_size))
-			if !info.success {
-				fmt.printf(" failed :(\n")
-				return
+			/* focus frequency change */
+			if freq_jump != 0 {
+				focus_freq = clamp(focus_freq + freq_jump, 50_000_000, 3_000_000_000)
+				fmt.printf("new center frequency: %d MHz...", focus_freq/1_000_000)
+				//iio.undo_device(&info) /* this crashes, so it's commented out for now, even though it leaks memory */
+				info := iio.prep_and_get_device(iio.STANDARD_IP, focus_freq, sample_rate, int(bin_size))
+				if !info.success {
+					fmt.printf(" failed :(\n")
+					return
+				}
+				fmt.printf(" success!\n")
 			}
-			fmt.printf(" success!\n")
+			/* sample rate change */
+			if rate_jump != 0 {
+				sample_rate = clamp(sample_rate + rate_jump, 10_000_000, 60_000_000)
+				fmt.printf("new sample rate: %d MSPS...", sample_rate/1_000_000)
+				//iio.undo_device(&info) /* this crashes, so it's commented out for now, even though it leaks memory */
+				info := iio.prep_and_get_device(iio.STANDARD_IP, focus_freq, sample_rate, int(bin_size))
+				if !info.success {
+					fmt.printf(" failed :(\n")
+					return
+				}
+				fmt.printf(" success!\n")
+			}
 		}
 
 		arrow_was_pressed = arrow_pressed
@@ -232,4 +254,55 @@ sft :: proc(a: wav.Audio) -> wav.Audio {
 import "core:math"
 expi :: #force_inline proc(p: f32) -> complex64 {
 	return complex(math.cos_f32(p), math.sin_f32(p))
+}
+
+/* does not work :(
+   it's too slow */
+decode :: proc() {
+	fmt.println("decoding\n")
+	level :: uint(9)
+	bin_size :: uint(1 << level)
+	sdr_sample_rate :: 60_000_000
+	focus_freq := 200_000_000
+
+	low_freq :: bin_size/2 - 50
+	high_freq :: low_freq + 100
+	freq_difference :: high_freq - low_freq
+	audio_sample_rate :: 20_000
+	seconds :: 4
+
+	info := iio.prep_and_get_device(iio.STANDARD_IP, focus_freq, sdr_sample_rate, int(bin_size))
+	if !info.success do return
+
+	big_buf := make([][2]i16, bin_size * audio_sample_rate * seconds)
+	slice := big_buf
+	for i in 0..<audio_sample_rate*seconds {
+		copy(slice[:bin_size], iio.refill_buffer(&info))
+		slice = slice[bin_size:]
+	}
+	fmt.println("saw the thing")
+
+	decoded := wav.Audio{audio_sample_rate, make([]f32, audio_sample_rate*seconds)}
+	freqi_buffer := make([]complex64, bin_size)
+	freqs_buffer := make([]f32, bin_size)
+	defer {
+		delete(decoded.audio)
+		delete(freqi_buffer)
+		delete(freqs_buffer)
+	}
+
+	data := big_buf
+	for frame in &decoded.audio {
+		fted := fft(data[:bin_size], level, freqi_buffer, freqs_buffer)
+		{
+			maxf: f32
+			maxi: int
+			for f, i in fted[low_freq:high_freq] do if f > maxf { maxf = f; maxi = i }
+			frame = f32(maxi) / f32(freq_difference) - 0.5
+			fmt.println(frame)
+		}
+		data = data[bin_size:]
+	}
+
+	wav.write_wav(os.args[1], decoded, false)
 }
