@@ -16,7 +16,7 @@ main :: proc() {
 waterfall :: proc() {
 	fmt.printf("waterfall\n")
 
-	level := uint(9)
+	level := uint(10)
 	if len(os.args) > 1 do level = uint(clamp(strconv.atoi(os.args[1]), 3, 12))
 	bin_size := uint(1 << level)
 	sample_rate := 60_000_000
@@ -52,6 +52,7 @@ waterfall :: proc() {
 
 	arrow_was_pressed := false
 	space_was_pressed := false
+	f_key_was_pressed := false
 	paused := false
 	for !fenster.loop(fen) {
 		if !paused do for y := fen.height - 1;  y > 0 ; y -= 1 {
@@ -86,6 +87,7 @@ waterfall :: proc() {
 
 		arrow_pressed := false
 		space_pressed := false
+		f_key_pressed := false
 		freq_jump := 0
 		rate_jump := 0
 
@@ -99,16 +101,18 @@ waterfall :: proc() {
 		}
 
 		if fen.keys[ARROW_KEY.LEFT] { arrow_pressed = true
+			if fen.mod == i32(MOD_KEY.SHIFT) do rate_jump = 1_000_000
 			rate_jump = 10_000_000
 		}
 		if fen.keys[ARROW_KEY.RIGHT] { arrow_pressed = true
+			if fen.mod == i32(MOD_KEY.SHIFT) do rate_jump = -1_000_000
 			rate_jump = -10_000_000
 		}
 
-		if fen.keys[SPACE_KEY] {
-			space_pressed = true
-		}
+		if fen.keys[SPACE_KEY] do space_pressed = true
 		if space_pressed && !space_was_pressed do paused = !paused
+		if fen.mouse do f_key_pressed = true
+		if f_key_pressed && !f_key_was_pressed do fmt.printf("Frequency at cursor: %v MHz\n", (f32(focus_freq) + f32(sample_rate)*(f32(fen.x)/f32(bin_size) - 0.5)) / 1e6)
 
 		if arrow_pressed && !arrow_was_pressed {
 			/* focus frequency change */
@@ -139,6 +143,7 @@ waterfall :: proc() {
 
 		arrow_was_pressed = arrow_pressed
 		space_was_pressed = space_pressed
+		f_key_was_pressed = f_key_pressed
 
 		if fen.keys[ESC_KEY] || fen.keys['Q'] do break
 	}
