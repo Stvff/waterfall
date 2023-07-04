@@ -3,9 +3,10 @@ A waterfall spectrum analyzer for the ADALM-PLUTO SDR, written in Odin, using fe
 This is a project that was made for the University of Twente First year's Electrical Engineering Wireless transmission project of 2023.
 
 ![Mobile data LTE bands around 800MHz](/LTE_bands.png "A picture of the LTE bands in the program")\
-*Mobile data LTE bands around 800MHz*
-[![Youtube Video demonstration](http://img.youtube.com/vi/S-KG5fY48GU/0.jpg)](http://www.youtube.com/watch?v=S-KG5fY48GU "Demonstration of Waterfall")
-*Video demonstration of Waterfall on YouTube*
+*Mobile data LTE bands around 800MHz*\
+\
+[![Youtube Video demonstration](http://img.youtube.com/vi/S-KG5fY48GU/0.jpg)](http://www.youtube.com/watch?v=S-KG5fY48GU "Demonstration of Waterfall")\
+*Video demonstration of Waterfall on YouTube (click for the video)*
 
 ## Dependencies
 Linux, X11, [Odin](https://github.com/odin-lang/Odin), [libiio](https://github.com/analogdevicesinc/libiio), bash, gcc
