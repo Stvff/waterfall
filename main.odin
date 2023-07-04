@@ -14,8 +14,6 @@ main :: proc() {
 }
 
 waterfall :: proc() {
-	fmt.printf("waterfall\n")
-
 	level := uint(10)
 	if len(os.args) > 1 do level = uint(clamp(strconv.atoi(os.args[1]), 3, 12))
 	bin_size := uint(1 << level)
@@ -23,6 +21,7 @@ waterfall :: proc() {
 	focus_freq := 100_000_000
 	history_size := 800
 	if len(os.args) > 2 do history_size = clamp(strconv.atoi(os.args[2]), 20, 2000)
+	fmt.printf("Level: %v (bin size: %v samples)\nCenter frequency: %v MHz\nSample rate/Bandwidth: %v MHz\nHistory size: %v\n", level, bin_size, focus_freq/1_000_000, sample_rate/1_000_000, history_size)
 
 	info := iio.prep_and_get_device(iio.STANDARD_IP, focus_freq, sample_rate, int(bin_size))
 	if !info.success do return
@@ -39,7 +38,7 @@ waterfall :: proc() {
 	fen := &f_actual
 	fenster.open(fen)
 	defer {
-		fenster.close(fen)
+//		fenster.close(fen)
 		delete(scr_buf)
 	}
 
@@ -92,21 +91,21 @@ waterfall :: proc() {
 		rate_jump := 0
 
 		if fen.keys[ARROW_KEY.UP] { arrow_pressed = true
-			if fen.mod == i32(MOD_KEY.SHIFT) do freq_jump = 100_000_000
-			else do freq_jump = 10_000_000
+			if fen.mod == i32(MOD_KEY.SHIFT) do freq_jump = 10_000_000
+			else do freq_jump = 100_000_000
 		}
 		if fen.keys[ARROW_KEY.DOWN] { arrow_pressed = true
-			if fen.mod == i32(MOD_KEY.SHIFT) do freq_jump = -100_000_000
-			else do freq_jump = -10_000_000
+			if fen.mod == i32(MOD_KEY.SHIFT) do freq_jump = -10_000_000
+			else do freq_jump = -100_000_000
 		}
 
 		if fen.keys[ARROW_KEY.LEFT] { arrow_pressed = true
 			if fen.mod == i32(MOD_KEY.SHIFT) do rate_jump = 1_000_000
-			rate_jump = 10_000_000
+			else do rate_jump = 10_000_000
 		}
 		if fen.keys[ARROW_KEY.RIGHT] { arrow_pressed = true
 			if fen.mod == i32(MOD_KEY.SHIFT) do rate_jump = -1_000_000
-			rate_jump = -10_000_000
+			else do rate_jump = -10_000_000
 		}
 
 		if fen.keys[SPACE_KEY] do space_pressed = true

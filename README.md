@@ -1,9 +1,11 @@
-# waterfall
+# Waterfall
 A waterfall spectrum analyzer for the ADALM-PLUTO SDR, written in Odin, using fenster and libiio. Only on X11 (for now?).
 This is a project that was made for the University of Twente First year's Electrical Engineering Wireless transmission project of 2023.
 
 ![Mobile data LTE bands around 800MHz](/LTE_bands.png "A picture of the LTE bands in the program")\
 *Mobile data LTE bands around 800MHz*
+[![Youtube Video demonstration](http://img.youtube.com/vi/S-KG5fY48GU/0.jpg)](http://www.youtube.com/watch?v=S-KG5fY48GU "Demonstration of Waterfall")
+*Video demonstration of Waterfall on YouTube*
 
 ## Dependencies
 Linux, X11, [Odin](https://github.com/odin-lang/Odin), [libiio](https://github.com/analogdevicesinc/libiio), bash, gcc
@@ -19,8 +21,9 @@ It should bring up the window.
 ## Usage
 Pressing the up-and-down arrow keys changes the frequency that the ADALM-PLUTO 'focuses' on, and with it, the center frequency.\
 The center frequency is at the middle of the screen.\
-\
 Pressing the left-and-right arrow keys changes the sampling rate (and with it, the bandwidth of the FFT).\
+Holding shift while pressing the arrow keys makes it take smaller steps.\
+\
 When running the program, there are two optional command-line arguments. The first is the 'level', which dictates the screen size and FFT bin size.
 The second is the screen height, so the amount of history the program displays.\
 \
