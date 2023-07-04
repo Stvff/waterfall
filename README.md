@@ -28,7 +28,8 @@ Holding shift while pressing the arrow keys makes it take smaller steps.\
 When running the program, there are two optional command-line arguments. The first is the 'level', which dictates the screen size and FFT bin size.
 The second is the screen height, so the amount of history the program displays.\
 \
-Clicking at a spot in the window will print the frequency at the cursor.
+Clicking at a spot in the window will print the frequency at the cursor.\
+Pressing 'm' will print the amplitude at the highest frequency, and colour it light red.
 
 ## Details
 The sample rate seems to be directly proportional to the bandwidth of the signal. At a sample rate of 60MSPS and a focus frequency of 100MHz,

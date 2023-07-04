@@ -61,12 +61,10 @@ waterfall :: proc() {
 		}
 		data := iio.refill_buffer(&info)
 		fted := fft(data, level, freqi_buffer, freqs_buffer)
-		{
-			maxf: f32
-			for f, i in fted do if f > maxf do maxf = f
-			for f, i in fted {
-				fen.buf[i] = mono_colour(u8(255*f/maxf))
-			}
+		maxf: f32; maxi: int
+		for f, i in fted do if f > maxf { maxf = f; maxi = i }
+		for f, i in fted {
+			fen.buf[i] = mono_colour(u8(255*f/maxf))
 		}
 
 		/* coloured subdivisions */
@@ -112,6 +110,10 @@ waterfall :: proc() {
 		if space_pressed && !space_was_pressed do paused = !paused
 		if fen.mouse do f_key_pressed = true
 		if f_key_pressed && !f_key_was_pressed do fmt.printf("Frequency at cursor: %v MHz\n", (f32(focus_freq) + f32(sample_rate)*(f32(fen.x)/f32(bin_size) - 0.5)) / 1e6)
+		if fen.keys['M'] {
+			fmt.printf("Maximum value: %v, at %v MHz\n", maxf, (f32(focus_freq) + f32(sample_rate)*(f32(maxi)/f32(bin_size) - 0.5)) / 1e6)
+			fen.buf[maxi] = PASTEL_RED
+		}
 
 		if arrow_pressed && !arrow_was_pressed {
 			/* focus frequency change */
