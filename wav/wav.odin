@@ -5,7 +5,7 @@ import "core:fmt"
 import "core:slice"
 
 Audio :: struct {
-	sample_freq: int /* samples per second */
+	sample_freq: int, /* samples per second */
 	audio: []f32 /* normalized values */
 }
 Audio_zero :: Audio { 0, nil }

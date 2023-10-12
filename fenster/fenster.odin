@@ -20,27 +20,27 @@ SPACE_KEY :: 32
 
 rgba :: [4]byte
 Fenster :: struct {
-	title: cstring
-	width: i32
-	height: i32
-	buf: [^]rgba
-	keys: [256]b32   /* keys are mostly ASCII, but arrows are 17..20 */
-	mod: i32         /* mod is 4 bits mask, ctrl=1, shift=2, alt=4, meta=8 */
-	x: i32
-	y: i32
-	mouse: b32
-	_dpy: [8]byte // Display *dpy;
-	_w: [8]byte   // Window w;
-	_gc: [8]byte  // GC gc;
-	_img: [8]byte // XImage *img;
+	title: cstring,
+	width: i32,
+	height: i32,
+	buf: [^]rgba,
+	keys: [256]b32,   /* keys are mostly ASCII, but arrows are 17..20 */
+	mod: i32,         /* mod is 4 bits mask, ctrl=1, shift=2, alt=4, meta=8 */
+	x: i32,
+	y: i32,
+	mouse: b32,
+	_dpy: [8]byte, // Display *dpy;
+	_w: [8]byte,   // Window w;
+	_gc: [8]byte,  // GC gc;
+	_img: [8]byte, // XImage *img;
 }
 Texture :: struct {
-	w, h: int
-	t: []rgba
+	w, h: int,
+	t: []rgba,
 }
 
 draw_pixel :: proc {
-	draw_pixel_v
+	draw_pixel_v,
 	draw_pixel_i
 }
 

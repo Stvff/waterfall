@@ -30,6 +30,8 @@ The second is the screen height, so the amount of history the program displays.\
 \
 Clicking at a spot in the window will print the frequency at the cursor.\
 Pressing 'm' will print the amplitude at the highest frequency, and colour it light red.
+\
+The 'q' and the escape key will quit the program. 
 
 ## Details
 The sample rate seems to be directly proportional to the bandwidth of the signal. At a sample rate of 60MSPS and a focus frequency of 100MHz,

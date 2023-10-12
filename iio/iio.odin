@@ -8,10 +8,10 @@ Device_ptr  :: distinct rawptr
 Channel_ptr :: distinct rawptr
 
 Info :: struct {
-	ctx: Context_ptr
-	dev: Device_ptr
-	buf: Buffer_ptr
-	cha: [2]Channel_ptr
+	ctx: Context_ptr,
+	dev: Device_ptr,
+	buf: Buffer_ptr,
+	cha: [2]Channel_ptr,
 	success: b8
 }
 
