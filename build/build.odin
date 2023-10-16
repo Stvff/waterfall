@@ -2,7 +2,20 @@ package build_waterfall
 
 import build "core_build"
 import "core:os"
-import "core:strings"
+
+main :: proc() {
+	project := build.Project {
+		name = "waterfall",
+		configure_target_proc = config_target
+	}
+	build.add_target(&project, &target_debug)
+	build.add_target(&project, &target_release)
+	build.add_project(&project)
+
+	options := build.parse_args(os.args)
+	options.default_config_name = "release"
+	build.run(&project, options)
+}
 
 target_debug := build.Target {
 	name = "debug",
@@ -26,14 +39,14 @@ config_target :: proc(project: ^build.Project, target: ^build.Target) -> build.C
 		case "debug":
 			config.flags += {.Debug}
 			config.opt = .None
-			append(&config.pre_build_commands, build.Command{"compile C libraries", compile_c_libs})
-			append(&config.post_build_commands, build.Command{"cleanup C libraries", cleanup_c_libs})
+			build.add_pre_build_command(&config, "compile C libraries", compile_c_libs)
+			build.add_post_build_command(&config, "cleanup C libraries", cleanup_c_libs)
 		case "release":
-			config.flags += {.Disable_Assert}
+			config.flags += {.Disable_Assert, .No_Bounds_Check}
 			config.opt = .Speed
-			append(&config.pre_build_commands, build.Command{"compile C libraries", compile_c_libs_release})
-			append(&config.post_build_commands, build.Command{"cleanup C libraries", cleanup_c_libs})
-			append(&config.post_build_commands, build.Command{"Remove build executable", selfdestruct})
+			build.add_pre_build_command(&config, "compile C libraries", compile_c_libs_release)
+			build.add_post_build_command(&config, "cleanup C libraries", cleanup_c_libs)
+			build.add_post_build_command(&config, "Remove build executable", selfdestruct)
 	}
 	return config
 }
@@ -63,29 +76,13 @@ compile_c_libs :: proc(config: build.Config) -> int {
 
 cleanup_c_libs :: proc(config: build.Config) -> int {
 	os.remove("fenster.a")
-	os.remove("fenster.o")
+	os.remove("fenster_x11.o")
 	os.remove("iio_odin.a")
-	os.remove("iio_odin.a")
+	os.remove("iio_odin.o")
 	return 0
 }
 
 selfdestruct :: proc(config: build.Config) -> int {
 	os.remove(os.args[0])
 	return 0
-}
-
-import "core:fmt"
-main :: proc() {
-	project := build.Project {
-		name = "waterfall",
-		configure_target_proc = config_target
-	}
-	build.add_target(&project, &target_debug)
-	build.add_target(&project, &target_release)
-	build.add_project(&project)
-
-	options := build.build_options_make_from_args(os.args)
-	options.default_config_name = "release"
-	options.display_external_configs = true
-	build.run(&project, options)
 }
