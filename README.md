@@ -9,11 +9,11 @@ This is a project that was made for the University of Twente First year's Electr
 *Video demonstration of Waterfall on YouTube (click for the video)*
 
 ## Dependencies
-Linux, X11, [Odin](https://github.com/odin-lang/Odin), [libiio](https://github.com/analogdevicesinc/libiio), bash, gcc
+Linux, X11, [Odin](https://github.com/odin-lang/Odin), [libiio](https://github.com/analogdevicesinc/libiio), C build tools
 
 ## Building and running
 First you build it:\
-`$ ./make.sh`\
+`$ odin run build`\
 Then, connect the ADALM-PLUTO to your pc.\
 Now you can run it:\
 `$ ./waterfall`\

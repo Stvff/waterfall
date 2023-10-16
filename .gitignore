@@ -1,6 +1,7 @@
 *.bin
 *.wav
 *.a
+*.o
 waterfall
 *.mp4
 s/*

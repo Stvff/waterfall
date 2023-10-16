@@ -15,7 +15,10 @@ Info :: struct {
 	success: b8
 }
 
-foreign import iio "iio_odin.a"
+foreign import iio {
+	"../iio_odin.a",
+	"system:iio"
+}
 foreign iio {
 	prep_and_get_device :: proc(ip_string: cstring, rx_freq, sample_freq, buffer_size: int) -> Info ---
 	refill_buffer :: proc(info: ^Info) -> [][2]i16 ---

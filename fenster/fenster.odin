@@ -76,7 +76,10 @@ mono_colour :: proc(clr: u8) -> rgba {
 	return rgba{clr, clr, clr, 255}
 }
 
-foreign import fenster "fenster.a"
+foreign import fenster {
+	"../fenster.a",
+	"system:X11"
+}
 foreign fenster {
 	open :: proc "c" (f: ^Fenster) -> b32 ---
 	loop :: proc "c" (f: ^Fenster) -> b32 ---
